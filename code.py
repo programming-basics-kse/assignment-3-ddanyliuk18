@@ -6,3 +6,4 @@ parser.add_argument("country", help="code of the country")
 parser.add_argument("year", help="year of olympic")
 parser.add_argument("-output", help="filepath to save")
 args = parser.parse_args()
+
