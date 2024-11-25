@@ -1,7 +1,7 @@
 import argparse
 
-def read_file():
-    with open('athlete_events.csv', "r", encoding='utf-8') as file:
+def read_file(filepath):
+    with open(filepath, "r", encoding='utf-8') as file:
         lines = file.readlines()
         head = lines[0].strip().split(",")
         all_data = []
@@ -13,6 +13,16 @@ def read_file():
             all_data.append(rows)
     return all_data
 
+
+def filtered_data(data, country, year):
+    filtered_data = []
+    for i in data:
+        if i["NOC"] == country and i["Year"] == year:
+            filtered_data.append(i)
+    return filtered_data
+
+
+
 parser = argparse.ArgumentParser("Olympic Athletes")
 parser.add_argument("file", help="filepath")
 parser.add_argument("-medals", help="sorted medals")
@@ -21,6 +31,17 @@ parser.add_argument("year", help="year of olympic")
 parser.add_argument("-output", help="filepath to save")
 args = parser.parse_args()
 
-medal_counts = {"Gold" :  0, "Silver" : 0, "Bronze": 0}
+data = read_file(args.file)
+country = args.country
+year = args.year
 
-print(read_file())
+filtered = filtered_data(data, country, year)
+
+
+
+if filtered:
+    print(f"Filtered data for {country} in {year}:")
+    for i in filtered:
+        print(i)
+else:
+    print(f"No data found for {country} in {year}.")
