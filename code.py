@@ -1,47 +1,57 @@
 import argparse
+import csv
 
-def read_file(filepath):
-    with open(filepath, "r", encoding='utf-8') as file:
-        lines = file.readlines()
-        head = lines[0].strip().split(",")
+class OlympicData:
+    def __init__(self, filepath):
+        self.filepath = filepath
+        self.data = self.read_file()
+
+
+    def read_file(self):
         all_data = []
-        for line in lines[1:]:
-            data = line.strip().split(",")
-            rows = {}
-            for i in range(len(head)):
-                rows[head[i]] = data[i]
-            all_data.append(rows)
-    return all_data
+        with open(self.filepath, "r", encoding='utf-8') as file:
+            reader = csv.DictReader(file)
+            for i in reader:
+                all_data.append(i)
+        return all_data
 
 
-def filtered_data(data, country, year):
-    filtered_data = []
-    for i in data:
-        if i["NOC"] == country and i["Year"] == year:
-            filtered_data.append(i)
-    return filtered_data
+    def filtered_data(self, country, year):
+        filtered_data = []
+        for i in self.data:
+            if i["NOC"] == country and i["Year"] == year and i["Medal"] != "NA":
+                filtered_data.append(i)
+        return filtered_data
+
+
+
+class FindMedal:
+    def __init__(self, filtered_data):
+        self.filtered_data = filtered_data
+
+
+    def find_top_ten(self):
+        top_ten = self.filtered_data[:10]
+        if not top_ten:
+            print("Not found")
+        else:
+            for i in top_ten:
+                print(f"{i["Name"]}, {i["Sport"]}, {i["Medal"]}")
 
 
 
 parser = argparse.ArgumentParser("Olympic Athletes")
 parser.add_argument("file", help="filepath")
-parser.add_argument("-medals", help="sorted medals")
+parser.add_argument("-medals", action="store_true", help="sorted medals")
 parser.add_argument("country", help="code of the country")
 parser.add_argument("year", help="year of olympic")
 parser.add_argument("-output", help="filepath to save")
 args = parser.parse_args()
 
-data = read_file(args.file)
-country = args.country
-year = args.year
-
-filtered = filtered_data(data, country, year)
-
+data = OlympicData(args.file)
+filtered = data.filtered_data(args.country, args.year)
+medal = FindMedal(filtered)
+medal.find_top_ten()
 
 
-if filtered:
-    print(f"Filtered data for {country} in {year}:")
-    for i in filtered:
-        print(i)
-else:
-    print(f"No data found for {country} in {year}.")
+
