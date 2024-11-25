@@ -16,13 +16,25 @@ class OlympicData:
         return all_data
 
 
+    def medals_by_year(self, year):
+        medals_by_year = {}
+        for i in self.data:
+            if i["Year"] == year and i["Medal"] != "NA":
+                country = i["NOC"]
+                medal = i["Medal"]
+                if country in medals_by_year:
+                    medals_by_year[country][medal] += 1
+                else:
+                    medals_by_year[country] = {"Gold": 0, "Silver": 0, "Bronze": 0}
+        return medals_by_year
+
+
     def filtered_data(self, country, year):
         filtered_data = []
         for i in self.data:
             if i["NOC"] == country and i["Year"] == year and i["Medal"] != "NA":
                 filtered_data.append(i)
         return filtered_data
-
 
 
 class FindMedal:
@@ -36,22 +48,42 @@ class FindMedal:
             print("Not found")
         else:
             for i in top_ten:
-                print(f"{i["Name"]}, {i["Sport"]}, {i["Medal"]}")
+                print(f"{i['Name']}, {i['Sport']}, {i['Medal']}")
 
+
+    def count_medals(self):
+        medals = {"Gold": 0, "Silver": 0, "Bronze": 0 }
+        for i in self.filtered_data:
+            if i["Medal"] in medals:
+                medals[i["Medal"]] += 1
+
+        print(f"Gold: {medals['Gold']}")
+        print(f"Silver: {medals['Silver']}")
+        print(f"Bronze: {medals['Bronze']}")
+        return medals
 
 
 parser = argparse.ArgumentParser("Olympic Athletes")
 parser.add_argument("file", help="filepath")
-parser.add_argument("-medals", action="store_true", help="sorted medals")
-parser.add_argument("country", help="code of the country")
-parser.add_argument("year", help="year of olympic")
+parser.add_argument("-medals", nargs=2, metavar = ("country", "year"), help="sorted medals")
+parser.add_argument("-total", help="data of all countries")
 parser.add_argument("-output", help="filepath to save")
 args = parser.parse_args()
 
 data = OlympicData(args.file)
-filtered = data.filtered_data(args.country, args.year)
-medal = FindMedal(filtered)
-medal.find_top_ten()
+
+if args.medals:
+    country = args.medals[0]
+    year = args.medals[1]
+    filtered = data.filtered_data(country, year)
+    medal = FindMedal(filtered)
+    medal.find_top_ten()
+    if filtered:
+        medals = medal.count_medals()
 
 
-
+if args.total:
+    year = args.total
+    country_medals = data.medals_by_year(year)
+    for i in country_medals.items():
+        print(f"{i[0]} - Gold: {i[1]['Gold']}, Silver: {i[1]['Silver']}, Bronze: {i[1]['Bronze']}")
