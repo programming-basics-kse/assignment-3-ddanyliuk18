@@ -25,6 +25,7 @@ class OlympicData:
 
 
 
+
 class FindMedal:
     def __init__(self, filtered_data):
         self.filtered_data = filtered_data
@@ -36,7 +37,19 @@ class FindMedal:
             print("Not found")
         else:
             for i in top_ten:
-                print(f"{i["Name"]}, {i["Sport"]}, {i["Medal"]}")
+                print(f"{i['Name']}, {i['Sport']}, {i['Medal']}")
+
+    def count_medals(self):
+        medals = {"Gold": 0, "Silver": 0, "Bronze": 0 }
+        for i in self.filtered_data:
+            if i["Medal"] in medals:
+                medals[i["Medal"]] += 1
+
+        print(f"Gold: {medals['Gold']}")
+        print(f"Silver: {medals['Silver']}")
+        print(f"Bronze: {medals['Bronze']}")
+        return medals
+
 
 
 
@@ -52,6 +65,6 @@ data = OlympicData(args.file)
 filtered = data.filtered_data(args.country, args.year)
 medal = FindMedal(filtered)
 medal.find_top_ten()
-
-
+if args.medals:
+    medals = medal.count_medals()
 
