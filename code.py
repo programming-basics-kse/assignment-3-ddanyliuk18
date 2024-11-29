@@ -16,12 +16,50 @@ class OlympicData:
         return all_data
 
 
+    def medals_by_year(self, year):
+        medals_by_year = {}
+        for i in self.data:
+            if i["Year"] == year and i["Medal"] != "NA":
+                country = i["NOC"]
+                medal = i["Medal"]
+                if country in medals_by_year:
+                    medals_by_year[country][medal] += 1
+                else:
+                    medals_by_year[country] = {"Gold": 0, "Silver": 0, "Bronze": 0}
+        return medals_by_year
+
+    def medal_by_country(self, countries):
+        country_medals = {}
+        for country in countries:
+            country_medals[country] = {}
+        for i in self.data:
+            country = i["NOC"]
+            year = i["Year"]
+
+            if country in countries and i["Medal"] != "NA":
+                if year not in country_medals[country]:
+                    country_medals[country][year] = 0
+                country_medals[country][year] += 1
+
+        best_years = {}
+        for country in country_medals:
+            best_year = None
+            max_medals = 0
+            for year, medals in country_medals[country].items():
+                if medals > max_medals:
+                    best_year = year
+                    max_medals = medals
+            best_years[country] = (best_year, max_medals)
+        return best_years
+
     def filtered_data(self, country, year):
         filtered_data = []
         for i in self.data:
             if i["NOC"] == country and i["Year"] == year and i["Medal"] != "NA":
                 filtered_data.append(i)
         return filtered_data
+
+
 
 
 
@@ -50,61 +88,37 @@ class FindMedal:
         print(f"Bronze: {medals['Bronze']}")
         return medals
 
-    def overall_status(self, countries):
-        results = {}
-        for country in countries:
-            countries_data = []
-            for item in self.filtered_data:
-                if item["NOC"] == country and item["Medal"] != "NA":
-                    countries_data.append(item)
-            medals_per_year = {}
-            for item in countries_data:
-                year = item["Year"]
-                medal = item["Medal"]
-                if year not in medals_per_year:
-                     medals_per_year[year] = {"Gold": 0, "Silver": 0, "Bronze": 0}
-                if medal in medals_per_year[year]:
-                    medals_per_year[medal] += 1
-
-            best_years = {}
-            for medal_type in ["Gold", "Silver", "Bronze"]:
-                max_year = None
-                max_count = 0
-                for year, counts in medals_per_year.items():
-                    if counts[medal_type] > max_count:
-                        max_year = year
-                        max_count = counts[medal_type]
-                    if max_year is not None:
-                        best_years[medal_type] = (max_year, max_count)
-                    else:
-                        best_years[medal_type] = None
-            results[country] = best_years
-
-        for country, best_years in results.items():
-            print(f"The best results for {country}:")
-            for medal_type, (year, count) in best_years.items():
-                print(f"{medal_type}: {year} year - {count} medals")
-
-
-
-
-
-
 
 parser = argparse.ArgumentParser("Olympic Athletes")
 parser.add_argument("file", help="filepath")
-parser.add_argument("-medals", action="store_true", help="sorted medals")
-parser.add_argument("country",nargs = "?", help="code of the country")
-parser.add_argument("year",nargs = "?", help="year of olympic")
-parser.add_argument("-overall", nargs = "+", help="overall analysis of medals count")
+parser.add_argument("-medals", nargs=2, metavar = ("country", "year"), help="sorted medals")
+parser.add_argument("-overall", nargs = "+",
+                    help="overall the best amount of medals for country ", dest="countries")
+parser.add_argument("-total", help="data of all countries")
 parser.add_argument("-output", help="filepath to save")
 args = parser.parse_args()
 
 data = OlympicData(args.file)
-filtered = data.filtered_data(args.country, args.year)
-medal = FindMedal(filtered)
-medal.find_top_ten()
+
 if args.medals:
-    medals = medal.count_medals()
-if args.overall:
-    medal.overall_status(args.overall)
+    country = args.medals[0]
+    year = args.medals[1]
+    filtered = data.filtered_data(country, year)
+    medal = FindMedal(filtered)
+    medal.find_top_ten()
+    if filtered:
+        medals = medal.count_medals()
+
+if args.total:
+    year = args.total
+    country_medals = data.medals_by_year(year)
+    for i in country_medals.items():
+        print(f"{i[0]} - Gold: {i[1]['Gold']}, Silver: {i[1]['Silver']}, Bronze: {i[1]['Bronze']}")
+
+if args.countries:
+     best_years = data.medal_by_country(args.countries)
+     for country, (year, medals) in best_years.items():
+         if year is not None:
+             print(f"{country} best result was {medals} medals in Olympics {year}")
+         else:
+             print(f"Unfortunately no medals found for {country}")
