@@ -43,9 +43,10 @@ class Country:
 
 
     def find_total(self):
+        total_by_year = {}
         for year, counts in self.success.items():
-            total = counts["Gold"] + counts["Silver"] + counts["Bronze"]
-        return total
+            total_by_year[year] = counts["Gold"] + counts["Silver"] + counts["Bronze"]
+        return total_by_year
 
     def find_sums(self):
         sums = []
@@ -55,31 +56,33 @@ class Country:
 
     def find_max(self):
         max_value = 0
-        for year, counts in self.success.items():
-            if self.total > max_value:
-                max_value = self.total
+        for year, total in self.total.items():
+            if total > max_value:
+                max_value = total
                 max_year = year
         print(f"The max medals was {max_value} in {max_year}\n")
         return max_year
 
 
     def find_min(self):
-        for year, counts in self.success.items():
-            if self.total < self.max_year:
-                min_value = self.total
+        min_value = self.max_year
+        for year, total in self.total.items():
+            if total < min_value:
+                min_value = total
                 min_year = year
-            print(f"The min medals was {min_value} in {min_year}\n")
-            return min_year
+        print(f"The min medals was {min_value} in {min_year}\n")
+        return min_year
 
 
     def find_average(self):
         averages = {}
         for year, counts in self.success.items():
-            if self.total > 0:
+            total = self.total[year]
+            if total > 0:
                 averages[year] = {
-                    "Gold": counts["Gold"] / self.total,
-                    "Silver": counts["Silver"] / self.total,
-                    "Bronze": counts["Bronze"] / self.total,
+                    "Gold": counts["Gold"] / total,
+                    "Silver": counts["Silver"] / total,
+                    "Bronze": counts["Bronze"] / total,
             }
         for year, avg_counts in averages.items():
             print(f"{year}: Gold: {avg_counts['Gold']:.2f}, Silver: {avg_counts['Silver']:.2f}, Bronze: {avg_counts['Bronze']:.2f}")
