@@ -85,6 +85,7 @@ class OlympicData:
             print(f"{year}: Gold: {avg_counts['Gold']:.2f}, Silver: {avg_counts['Silver']:.2f}, Bronze: {avg_counts['Bronze']:.2f}")
 
 
+
 class FindMedal:
     def __init__(self, filtered_data):
         self.filtered_data = filtered_data
@@ -137,6 +138,13 @@ if args.total:
     for i in country_medals.items():
         print(f"{i[0]} - Gold: {i[1]['Gold']}, Silver: {i[1]['Silver']}, Bronze: {i[1]['Bronze']}")
 
+
 if args.interactive:
     main_country = input("Please, enter your country: ")
     data.country_inf(main_country)
+
+if args.total:
+    year = args.total
+    country_medals = data.medals_by_year(year)
+    for i in country_medals.items():
+        print(f"{i[0]} - Gold: {i[1]['Gold']}, Silver: {i[1]['Silver']}, Bronze: {i[1]['Bronze']}")
